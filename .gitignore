@@ -1,0 +1,4 @@
+# Debug files
+build/*
+out/*
+bin/*

@@ -1,0 +1,62 @@
+全局变量:
+    ScrollBar scrollBar({600, 250}, {20, 150}, NULL);
+    SCROLLINFO si;
+
+WinMain函数:
+    scrollBar.create(hwnd, hInstance, "", WS_CHILD | WS_VISIBLE | SBS_VERT);
+
+    // 设置滚动条范围
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_RANGE | SIF_PAGE;
+    si.nMin = 0;
+    si.nMax = 10; // 假设最大值为10
+    si.nPage = 1; // 每次滚动1行
+    SetScrollInfo(scrollBar.m_hwnd, SB_CTL, &si, TRUE);
+
+Proc函数:
+    switch (uMsg)
+    {
+        ...
+    case WM_VSCROLL:
+        {
+            // static int prevPos = 0;
+            HWND hwndScrollBar = (HWND)lParam;
+            WORD user_operation = LOWORD(wParam);
+            // 获取滚动条位置
+            si.cbSize = sizeof(si);
+            si.fMask = SIF_POS;
+            GetScrollInfo(hwndScrollBar, SB_VERT, &si);
+            switch (user_operation)
+            {
+            // User clicked the top arrow.
+            case SB_LINEUP:
+                si.nPos -= 1;
+                break;
+
+            // User clicked the bottom arrow.
+            case SB_LINEDOWN:
+                si.nPos += 1;
+                break;
+                // User clicked the scroll bar shaft above the scroll box.
+
+            case SB_THUMBPOSITION:
+                si.nPos = HIWORD(wParam);
+                break;
+            default:
+                return 0;
+            }
+
+            si.fMask = SIF_POS;
+            // If the position has changed, scroll window and update it.
+            if (si.nPos != GetScrollPos(hwndScrollBar, SB_VERT))
+            {
+                SetScrollInfo(hwndScrollBar, SB_VERT, &si, TRUE); // 移动scrollbar
+                SendMessage(hwndScrollBar, EM_LINESCROLL, 0, si.nPos);
+                // prevPos = si.nPos;
+            }
+            return 0;
+        }
+        ...
+    }
+
+其实可以直接创建时WS_VSCROLL属性(垂直滑动条)或WS_HSCROLL(水平滑动条)样式

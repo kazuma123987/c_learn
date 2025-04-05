@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "include",
+                "include\\easyx"
+            ],
+            "windowsSdkVersion": "10.0.19041.0",
+            "cStandard": "c99",
+            "cppStandard": "c++17",
+            "compilerPath": "C:\\A_TOOLS\\MinGW64\\x86_64-14.2.0-release-posix-seh-ucrt-rt_v12-rev1\\mingw64\\bin\\g++.exe",
+            "compilerArgs": [
+                "ASIO_STANDALON"
+            ]
+        }
+    ],
+    "version": 4
+}
