@@ -20,11 +20,14 @@
             // "program": "${workspaceFolder}/bin/midi_extract.exe",
             // "program": "${workspaceFolder}/bin/midi_player.exe",
             // "program": "${workspaceFolder}/bin/test.exe",
-            "program": "${workspaceFolder}/bin/firework.exe",
+            // "program": "${workspaceFolder}/bin/firework.exe",
+            "program": "${workspaceFolder}/bin/zlgcan_demo.exe",
+
             "args": [],
             "stopAtEntry": false,
             // "cwd": "${workspaceFolder}/src/test",
-            "cwd": "${workspaceFolder}/src/firework",
+            "cwd": "${workspaceFolder}/src/zlgcan_demo",
+
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

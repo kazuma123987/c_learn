@@ -30,9 +30,18 @@ file(GLOB worktime ${CMAKE_SOURCE_DIR}/src/worktime/*.c)
 file(GLOB midi_player ${CMAKE_SOURCE_DIR}/src/midi_player/*.cpp)
 file(GLOB midi_extract ${CMAKE_SOURCE_DIR}/src/midi_player/midi_extract.cpp)
 file(GLOB firework ${CMAKE_SOURCE_DIR}/src/firework/*.c*)
+file(GLOB zlgcan_demo ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/*.c* 
+  ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui/*.c* 
+  ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui/backends/imgui_impl_glfw.cpp
+  ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui/backends/imgui_impl_vulkan.cpp
+  )
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/midi_player/rtmidi)
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/midi_player/midifile)
+# add_subdirectory(${CMAKE_SOURCE_DIR}/src/midi_player/rtmidi)
+# add_subdirectory(${CMAKE_SOURCE_DIR}/src/midi_player/midifile)
+
+# 寻找库文件
+set(Vulkan_DIR $ENV{VULKAN_SDK})
+find_package(Vulkan REQUIRED)
 
 
 # 可执行文件
@@ -66,20 +75,31 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src/midi_player/midifile)
 
 # add_executable(worktime ${worktime})
 
-add_executable(midi_player ${midi_player})
+# add_executable(midi_player ${midi_player})
 
-add_executable(firework ${firework})
+# add_executable(firework ${firework})
 
+add_executable(zlgcan_demo ${zlgcan_demo})
 
 
 # 链接头文件
-target_include_directories(firework PRIVATE ${CMAKE_SOURCE_DIR}/include/easyx)
+# target_include_directories(firework PRIVATE ${CMAKE_SOURCE_DIR}/include/easyx)
+target_include_directories(zlgcan_demo PRIVATE 
+${CMAKE_SOURCE_DIR}/src/zlgcan_demo/zlgcan 
+${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui 
+${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui/backends)
 
 # 链接库目录
-target_link_directories(firework PRIVATE ${CMAKE_SOURCE_DIR}/lib/lib64/easyx)
-target_link_directories(firework PRIVATE ${CMAKE_SOURCE_DIR}/lib/lib64/glfw)
-target_link_directories(midi_player PRIVATE ${CMAKE_SOURCE_DIR}/lib/lib64/glfw)
+# target_link_directories(firework PRIVATE ${CMAKE_SOURCE_DIR}/lib/lib64/easyx)
+# target_link_directories(firework PRIVATE ${CMAKE_SOURCE_DIR}/lib/lib64/glfw)
+# target_link_directories(midi_player PRIVATE ${CMAKE_SOURCE_DIR}/lib/lib64/glfw)
+target_link_directories(zlgcan_demo PRIVATE 
+${CMAKE_SOURCE_DIR}/lib/lib64/zlgcan 
+${CMAKE_SOURCE_DIR}/lib/lib64/glfw 
+${CMAKE_SOURCE_DIR}/lib/lib64/zdbc)
 
 # 链接库
-target_link_libraries(midi_player PRIVATE rtmidi midifile)
-target_link_libraries(firework PRIVATE glfw3)
+# target_link_libraries(midi_player PRIVATE rtmidi midifile)
+# target_link_libraries(firework PRIVATE glfw3)
+target_link_libraries(zlgcan_demo PRIVATE zlgcan Vulkan::Vulkan glfw3 zdbc)
+
