@@ -68,7 +68,10 @@
         "bitset": "cpp",
         "condition_variable": "cpp",
         "regex": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "filesystem": "cpp",
+        "nfd_common.h": "c",
+        "simple_exec.h": "c"
     },
     "C_Cpp.default.compilerPath": "",
     "lldb.displayFormat": "auto",

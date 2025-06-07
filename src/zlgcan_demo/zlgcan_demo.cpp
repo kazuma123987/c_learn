@@ -1,29 +1,4 @@
-// Dear ImGui: standalone example application for Glfw + Vulkan
-
-// Learn about Dear ImGui:
-// - FAQ                  https://dearimgui.com/faq
-// - Getting Started      https://dearimgui.com/getting-started
-// - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
-// - Introduction, links and more at the top of imgui.cpp
-
-// Important note to the reader who wish to integrate imgui_impl_vulkan.cpp/.h in their own engine/app.
-// - Common ImGui_ImplVulkan_XXX functions and structures are used to interface with imgui_impl_vulkan.cpp/.h.
-//   You will use those if you want to use this rendering backend in your engine/app.
-// - Helper ImGui_ImplVulkanH_XXX functions and structures are only used by this example (main.cpp) and by
-//   the backend itself (imgui_impl_vulkan.cpp), but should PROBABLY NOT be used by your own engine/app code.
-// Read comments in imgui_impl_vulkan.h.
-
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
-#include <stdio.h>          // printf, fprintf
-#include <stdlib.h>         // abort
-#define GLFW_INCLUDE_NONE
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
 #include "zlgcan_demo.h"
-#include "zdbc/zdbc.h"
 //#include <vulkan/vulkan_beta.h>
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
@@ -384,6 +359,23 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
 // Main code
 int main(int, char**)
 {
+    // NFD Test
+    nfdchar_t *savePath = NULL;
+    nfdresult_t result = NFD_SaveDialog( "png,jpg;pdf", NULL, &savePath );
+    if ( result == NFD_OKAY )
+    {
+        puts("Success!");
+        puts(savePath);
+        free(savePath);
+    }
+    else if ( result == NFD_CANCEL )
+    {
+        puts("User pressed cancel.");
+    }
+    else 
+    {
+        printf("Error: %s\n", NFD_GetError() );
+    }
     // Initialize DBC
     DBCHandle dbch = ZDBC_Init(0,0);
     if(dbch == INVALID_DBC_HANDLE)
@@ -401,9 +393,8 @@ int main(int, char**)
         return -1;
     }
 
-    can_frame frame = {0};
     DBCMessage msg = {0};
-    int isEnd = false;
+    int isEnd = 0;
     std::vector<std::string> signal_names;
     do
     {
@@ -569,6 +560,9 @@ int main(int, char**)
 
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    // Cleanup CAN
+    ZDBC_Release(dbch);
 
     return 0;
 }

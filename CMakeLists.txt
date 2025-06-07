@@ -34,7 +34,17 @@ file(GLOB zlgcan_demo ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/*.c*
   ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui/*.c* 
   ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui/backends/imgui_impl_glfw.cpp
   ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui/backends/imgui_impl_vulkan.cpp
+  ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/nativefiledialog/src/nfd_common.c
   )
+
+if(DEFINED WIN32)
+  list(APPEND zlgcan_demo ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/nativefiledialog/src/nfd_win.cpp)
+elseif(DEFINED LINUX)
+    list(APPEND zlgcan_demo ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/nativefiledialog/src/nfd_zenity.c)
+    list(APPEND zlgcan_demo ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/nativefiledialog/src/nfd_gtk.c)
+elseif(DEFINED APPLE)
+  list(APPEND zlgcan_demo ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/nativefiledialog/src/nfd_cocoa.m)
+endif()
 
 # add_subdirectory(${CMAKE_SOURCE_DIR}/src/midi_player/rtmidi)
 # add_subdirectory(${CMAKE_SOURCE_DIR}/src/midi_player/midifile)
@@ -87,7 +97,8 @@ add_executable(zlgcan_demo ${zlgcan_demo})
 target_include_directories(zlgcan_demo PRIVATE 
 ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/zlgcan 
 ${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui 
-${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui/backends)
+${CMAKE_SOURCE_DIR}/src/zlgcan_demo/imgui/backends
+${CMAKE_SOURCE_DIR}/src/zlgcan_demo/nativefiledialog/src/include)
 
 # 链接库目录
 # target_link_directories(firework PRIVATE ${CMAKE_SOURCE_DIR}/lib/lib64/easyx)
