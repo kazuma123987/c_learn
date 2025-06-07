@@ -322,23 +322,23 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
 // Main code
 int main(int, char**)
 {
-    // NFD Test
-    nfdchar_t *savePath = NULL;
-    nfdresult_t result = NFD_SaveDialog( "png,jpg;pdf", NULL, &savePath );
-    if ( result == NFD_OKAY )
-    {
-        puts("Success!");
-        puts(savePath);
-        free(savePath);
-    }
-    else if ( result == NFD_CANCEL )
-    {
-        puts("User pressed cancel.");
-    }
-    else 
-    {
-        printf("Error: %s\n", NFD_GetError() );
-    }
+    // // NFD Test
+    // nfdchar_t *savePath = NULL;
+    // nfdresult_t result = NFD_SaveDialog( "png,jpg;pdf", NULL, &savePath );
+    // if ( result == NFD_OKAY )
+    // {
+    //     puts("Success!");
+    //     puts(savePath);
+    //     free(savePath);
+    // }
+    // else if ( result == NFD_CANCEL )
+    // {
+    //     puts("User pressed cancel.");
+    // }
+    // else 
+    // {
+    //     printf("Error: %s\n", NFD_GetError() );
+    // }
     // Initialize DBC
     DBCHandle dbch = ZDBC_Init(0,0);
     if(dbch == INVALID_DBC_HANDLE)
@@ -379,6 +379,7 @@ int main(int, char**)
 
     // Create window with Vulkan context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example", nullptr, nullptr);
     if (!glfwVulkanSupported())
     {
@@ -412,7 +413,7 @@ int main(int, char**)
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-    //io.ConfigViewportsNoAutoMerge = true;
+    io.ConfigViewportsNoAutoMerge = true;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
     // Setup Dear ImGui style
@@ -465,11 +466,11 @@ int main(int, char**)
 
     // Our state
     bool show_demo_window = true;
-    bool show_another_window = false;
+    bool show_main_window = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window) && show_main_window)
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -503,9 +504,10 @@ int main(int, char**)
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
-        // 2. Show my window.
+        // 2. Show Main(IMGUI) window.
+        if (show_main_window)
         {
-            ImGui::Begin("My Window");
+            ImGui::Begin("Main Window",&show_main_window);
             for(auto &signal : signal_names)
                 ImGui::Text(signal.c_str());
 

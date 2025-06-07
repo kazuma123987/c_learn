@@ -1,0 +1,7 @@
+[submodule "src/zlgcan_demo/imgui"]
+	path = src/zlgcan_demo/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "src/zlgcan_demo/nativefiledialog"]
+	path = src/zlgcan_demo/nativefiledialog
+	url = https://github.com/mlabbe/nativefiledialog.git
