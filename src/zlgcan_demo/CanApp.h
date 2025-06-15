@@ -27,9 +27,11 @@
 
 typedef struct  _CanDev
 {
+    const char *devName;
     UINT devType;
     UINT devIndex;
     DEVICE_HANDLE devHandle;
+    ZCAN_DEVICE_INFO devInfo;
 }CanDev;
 
 

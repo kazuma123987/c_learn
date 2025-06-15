@@ -228,6 +228,7 @@ void CanApp::RenderGUI()
             ImGui::SetNextWindowSize(ImVec2(DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2), ImGuiCond_FirstUseEver);
             if (ImGui::Begin("Devices", &showDeviceWindow))
             {
+                ImGui::NewLine();
                 ImGui::Text("Device");
                 ImGui::SameLine();
                 static int current_device = 0;
@@ -240,6 +241,7 @@ void CanApp::RenderGUI()
                     {
                         ZCAN_USBCANFD_200U,
                         ZCAN_USBCANFD_100U};
+                // ##表示不需要label
                 ImGui::Combo("##1", &current_device, devicesName, sizeof(devicesName) / sizeof(const char *), 3);
                 ImGui::SameLine();
                 ImGui::Text("Device Index");
@@ -271,8 +273,10 @@ void CanApp::RenderGUI()
                     DEVICE_HANDLE devHandle = ZCAN_OpenDevice(deviceType[current_device], current_devIndex, 0);
                     if (devHandle != nullptr)
                     {
-                        g_canDevices.push_back((CanDev){deviceType[current_device],current_devIndex,devHandle});
-                        printf("Open Devices Success! Dev: %s Index: %d\n",devicesName[current_device],current_devIndex);
+                        static ZCAN_DEVICE_INFO devInfo = {0};
+                        ZCAN_GetDeviceInf(devHandle, &devInfo);
+                        g_canDevices.push_back((CanDev){devicesName[current_device], deviceType[current_device], current_devIndex, devHandle, devInfo});
+                        printf("Open Devices Success! Dev: %s Index: %d\n", devicesName[current_device], current_devIndex);
                     }
                     else
                     {
@@ -280,6 +284,63 @@ void CanApp::RenderGUI()
                     }
                 }
                 ImGui::PopItemWidth();
+                ImGui::NewLine();
+                for (auto it = g_canDevices.begin(); it != g_canDevices.end(); it++)
+                {
+                    auto &canDev = *it;
+                    auto &devInfo = canDev.devInfo;
+                    if (ImGui::TreeNode((std::string(canDev.devName) + " Index" + std::to_string(canDev.devIndex)).c_str()))
+                    {
+                        // ImGui::SameLine();
+                        ImGui::PushItemWidth(300);
+
+                        if (ImGui::Button("Close Device"))
+                        {
+                            ZCAN_CloseDevice(canDev.devHandle);
+                            printf("Close Device %s\n", canDev.devName);
+                            g_canDevices.erase(it);
+                            ImGui::TreePop();
+                            break;
+                        }
+
+                        ImGui::SameLine();
+                        if (ImGui::Button("Device Info"))
+                        {
+                            ImGui::OpenPopup("Device Info");
+                        }
+
+                        ImGui::PopItemWidth();
+
+                        ImGuiWindowFlags devInfoWindowFlag = 0;
+                        if (ImGui::BeginPopup("Device Info", devInfoWindowFlag))
+                        {
+                            ImGui::SeparatorText("Device Info");
+                            ImGui::Text("Hardware Version:%x.%.2x", (devInfo.hw_Version) >> 8, (devInfo.hw_Version) & 0xFF);
+                            ImGui::Text("Software Version:%x.%.2x", (devInfo.fw_Version) >> 8, (devInfo.fw_Version) & 0xFF);
+                            ImGui::Text("Driver Version:%x.%.2x", (devInfo.dr_Version) >> 8, (devInfo.dr_Version) & 0xFF);
+                            ImGui::Text("DLL Version:%x.%.2x", (devInfo.in_Version) >> 8, (devInfo.in_Version) & 0xFF);
+                            ImGui::Text("CAN Numbers:%d", devInfo.can_Num);
+                            ImGui::Text("Serial Number:%s", (devInfo.str_Serial_Num));
+                            ImGui::Text("Device Hardware Type:%s", (devInfo.str_hw_Type));
+                            ImGui::EndPopup();
+                        }
+
+                        for (uint8_t i = 0; i < devInfo.can_Num; i++)
+                        {
+                            ImGui::BulletText("Channel %d",i);
+                            ImGui::SameLine();
+                            ImGui::PushID(i);
+                            if(ImGui::Button("Start"))
+                            {
+
+                            }
+                            ImGui::SameLine();
+                            ImGui::Button("Stop");
+                            ImGui::PopID();
+                        }
+                        ImGui::TreePop();
+                    }
+                }
                 ImGui::End();
             }
         }
@@ -368,7 +429,7 @@ void CanApp::Close()
     glfwTerminate();
 
     // Cleanup CAN
-    for(auto canDev : g_canDevices)
+    for (auto canDev : g_canDevices)
     {
         ZCAN_CloseDevice(canDev.devHandle);
     }
