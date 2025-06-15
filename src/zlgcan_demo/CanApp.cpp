@@ -1,4 +1,5 @@
 #include "CanApp.h"
+#include "imgui_spectrum.h"
 
 static void check_vk_result(VkResult err)
 {
@@ -37,7 +38,7 @@ int CanApp::InitGUIS()
     // Create window with Vulkan context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example", nullptr, nullptr);
+    window = glfwCreateWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, "Dear ImGui GLFW+Vulkan example", nullptr, nullptr);
     if (!glfwVulkanSupported())
     {
         printf("GLFW: Vulkan Not Supported\n");
@@ -74,17 +75,18 @@ int CanApp::InitGUIS()
     io.ConfigViewportsNoAutoMerge = true;
     // io.ConfigViewportsNoTaskBarIcon = true;
 
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    // ImGui::StyleColorsLight();
+    // // Setup Dear ImGui style
+    // ImGui::StyleColorsDark();
+    ImGui::StyleColorsLight();
 
-    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-    ImGuiStyle &style = ImGui::GetStyle();
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    {
-        style.WindowRounding = 0.0f;
-        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-    }
+    // // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    // ImGuiStyle &style = ImGui::GetStyle();
+    // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    // {
+    //     style.WindowRounding = 0.0f;
+    //     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    // }
+    // ImGui::Spectrum::StyleColorsSpectrum();
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForVulkan(window, true);
@@ -115,7 +117,7 @@ int CanApp::InitGUIS()
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
     // io.Fonts->AddFontDefault();
-    // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
+    io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
     // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
     // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
     // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
@@ -162,7 +164,6 @@ int CanApp::InitCANLibs()
 
     DBCMessage msg = {0};
     int isEnd = 0;
-    std::vector<std::string> signal_names;
     do
     {
         isEnd = ZDBC_GetNextMessage(dbch, &msg);         // Get the next message from DBC
@@ -209,15 +210,118 @@ void CanApp::RenderGUI()
     if (show_demo_window)
         ImGui::ShowDemoWindow(&show_demo_window);
 
-    // // 2. Show Main(IMGUI) window.
-    // if (show_main_window)
-    // {
-    //     ImGui::Begin("Main Window", &show_main_window);
-    //     for (auto &signal : signal_names)
-    //         ImGui::Text(signal.c_str());
+    // 2. Show Main(IMGUI) window.
+    if (show_main_window)
+    {
+        // Exceptionally add an extra assert here for people confused about initial Dear ImGui setup
+        // Most functions would normally just assert/crash if the context is missing.
+        IM_ASSERT(ImGui::GetCurrentContext() != NULL && "Missing Dear ImGui context. Refer to examples app!");
 
-    //     ImGui::End();
-    // }
+        // Verify ABI compatibility between caller code and compiled version of Dear ImGui. This helps detects some build issues.
+        IMGUI_CHECKVERSION();
+
+        static bool showDeviceWindow = false;
+        static bool showDBCWindow = false;
+
+        if (showDeviceWindow)
+        {
+            ImGui::SetNextWindowSize(ImVec2(DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2), ImGuiCond_FirstUseEver);
+            if (ImGui::Begin("Devices", &showDeviceWindow))
+            {
+                ImGui::Text("Device");
+                ImGui::SameLine();
+                static int current_device = 0;
+                ImGui::PushItemWidth(200);
+                const char *const devicesName[] =
+                    {
+                        "USBCANFD_200U",
+                        "USBCANFD_100U"};
+                const int deviceType[] =
+                    {
+                        ZCAN_USBCANFD_200U,
+                        ZCAN_USBCANFD_100U};
+                ImGui::Combo("##1", &current_device, devicesName, sizeof(devicesName) / sizeof(const char *), 3);
+                ImGui::SameLine();
+                ImGui::Text("Device Index");
+                ImGui::SameLine();
+                static int current_devIndex = 0;
+                const char *const devIndexName[] =
+                    {
+                        "0",
+                        "1",
+                        "2",
+                        "3",
+                        "4",
+                        "5",
+                        "6",
+                        "7",
+                        "8",
+                        "9",
+                        "10",
+                        "11",
+                        "12",
+                        "13",
+                        "14",
+                        "15",
+                    };
+                ImGui::Combo("##2", &current_devIndex, devIndexName, sizeof(devIndexName) / sizeof(const char *), 3);
+                ImGui::SameLine();
+                if (ImGui::Button("Open Select Device"))
+                {
+                    DEVICE_HANDLE devHandle = ZCAN_OpenDevice(deviceType[current_device], current_devIndex, 0);
+                    if (devHandle != nullptr)
+                    {
+                        g_canDevices.push_back((CanDev){deviceType[current_device],current_devIndex,devHandle});
+                        printf("Open Devices Success! Dev: %s Index: %d\n",devicesName[current_device],current_devIndex);
+                    }
+                    else
+                    {
+                        printf("Open Devices Failed!\n");
+                    }
+                }
+                ImGui::PopItemWidth();
+                ImGui::End();
+            }
+        }
+
+        if (showDBCWindow)
+        {
+            ImGui::SetNextWindowSize(ImVec2(DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2), ImGuiCond_FirstUseEver);
+            if (ImGui::Begin("DBC Send", &showDBCWindow))
+            {
+                for (auto &signal : signal_names)
+                    ImGui::Text(signal.c_str());
+                ImGui::End();
+            }
+        }
+
+        ImGui::SetNextWindowSize(ImVec2(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT), ImGuiCond_FirstUseEver);
+        const float label_width_base = ImGui::GetFontSize() * 12;               // Some amount of width for label, based on font size.
+        const float label_width_max = ImGui::GetContentRegionAvail().x * 0.40f; // ...but always leave some room for framed widgets.
+        const float label_width = (label_width_base < label_width_max) ? label_width_base : label_width_max;
+        ImGui::PushItemWidth(-label_width);
+
+        ImGuiWindowFlags window_flags = 0;
+        // window_flags |= ImGuiWindowFlags_::ImGuiWindowFlags_MenuBar;
+        // window_flags |= ImGuiWindowFlags_::ImGuiWindowFlags_ChildWindow;
+        if (ImGui::Begin("Main Window", &show_main_window, window_flags))
+        {
+
+            if (ImGui::Button("Devices", ImVec2(200, 100)))
+            {
+                showDeviceWindow = true;
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("DBC Send", ImVec2(200, 100)))
+            {
+                showDBCWindow = true;
+            }
+
+            ImGui::End();
+        }
+    }
 
     // Rendering
     ImGui::Render();
@@ -264,6 +368,10 @@ void CanApp::Close()
     glfwTerminate();
 
     // Cleanup CAN
+    for(auto canDev : g_canDevices)
+    {
+        ZCAN_CloseDevice(canDev.devHandle);
+    }
     ZDBC_Release(dbch);
 }
 

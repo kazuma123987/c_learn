@@ -25,10 +25,30 @@
 // header for open directory
 #include "nfd.h"
 
+typedef struct  _CanDev
+{
+    UINT devType;
+    UINT devIndex;
+    DEVICE_HANDLE devHandle;
+}CanDev;
+
+
 class CanApp
 {
 public:
 // #define APP_USE_UNLIMITED_FRAME_RATE
+    CanApp() {};
+    ~CanApp() {};
+
+    int InitGUIS();
+    int InitCANLibs();
+    bool IsExit();
+    int WindowResized();
+    void RenderGUI();
+    void RenderMainWindow();
+    void RenderPlatformWindow();
+    void Close();
+private:
 #ifdef _DEBUG
 #define APP_USE_VULKAN_DEBUG_REPORT
     VkDebugReportCallbackEXT g_DebugReport = VK_NULL_HANDLE;
@@ -50,19 +70,9 @@ public:
     ImGui_ImplVulkanH_Window *wd = nullptr;
     bool show_demo_window = true;
     bool main_is_minimized = false;
-    DBCHandle dbch = 0;
-
-    CanApp() {};
-    ~CanApp() {};
-
-    int InitGUIS();
-    int InitCANLibs();
-    bool IsExit();
-    int WindowResized();
-    void RenderGUI();
-    void RenderMainWindow();
-    void RenderPlatformWindow();
-    void Close();
+    DBCHandle dbch = 0; 
+    std::vector<std::string> signal_names; // TODO:优化逻辑
+    std::vector<CanDev> g_canDevices;
     bool IsExtensionAvailable(const ImVector<VkExtensionProperties> &properties, const char *extension);
     void SetupVulkan(ImVector<const char *> instance_extensions);
     void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int width, int height);
